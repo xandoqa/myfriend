@@ -1,27 +1,24 @@
 from tkinter import *
+from tkinter import scrolledtext, messagebox, font
+from datetime import datetime
+import json
+import os 
 
 class Aplication:
     def __init__(self, master=None):
-        self.canvas = Canvas(master, width=1366, height=768, bg="#b3d9ff")
-        self.canvas.pack()
+        self.master = master
+        self.conversation_history = [] #não salva em disco
 
-        centro_x = 1366 // 2
-        centro_y = 768 // 2
-        raio = 50
 
-        self.canvas.create_oval(
-            centro_x - raio,
-            centro_y - raio,
-            centro_x + raio,
-            centro_y + raio,
-            fill="blue"
-        )
+        #placeholders para módulos futuros
+        self.classifier = None
+        self.responder = None
+        self.nlp = None
 
-root = Tk()
-root.title("MyFriend: The Psychologist Machine")
-root.geometry("1366x768")
-root.configure(bg="#b3d9ff")
+        self.setup_ui()
+        self.load_knowledge_base()
+        self.add_welcome_message()
 
-Aplication(root)
-
-root.mainloop()
+    
+    def setup_ui(self):
+        
