@@ -1,24 +1,22 @@
-from tkinter import *
-from tkinter import scrolledtext, messagebox, font
-from datetime import datetime
-import json
-import os 
+import tkinter as tk
 
-class Aplication:
+class App(tk.Frame):
     def __init__(self, master=None):
-        self.master = master
-        self.conversation_history = [] #não salva em disco
+        super().__init__(master)
+        self.pack()
 
+# cria a janela principal
+root = tk.Tk()
 
-        #placeholders para módulos futuros
-        self.classifier = None
-        self.responder = None
-        self.nlp = None
+# define tamanho fixo 720x360
+root.geometry("720x360")
 
-        self.setup_ui()
-        self.load_knowledge_base()
-        self.add_welcome_message()
+# cria a aplicação dentro da janela
+myapp = App(master=root)
 
-    
-    def setup_ui(self):
-        
+# configurações da janela
+root.title("MyFriend v1.0")
+root.maxsize(720, 360)
+
+# inicia o loop
+myapp.mainloop()
