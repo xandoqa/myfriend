@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guia de Linguagens</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d0f;
+    --surface: #16161a;
+    --surface2: #1e1e24;
+    --border: rgba(255,255,255,0.07);
+    --text: #e8e8f0;
+    --muted: #888899;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Syne', sans-serif;
+
+    --py:  #3b82f6;
+    --c:   #ef4444;
+    --cs:  #a855f7;
+    --java:#f59e0b;
+    --php: #6366f1;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* HEADER */
+  header {
+    padding: 3rem 2rem 2rem;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content:'';
+    position:absolute; inset:0;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(99,102,241,0.12), transparent);
+    pointer-events:none;
+  }
+  header h1 {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+  }
+  header p { color: var(--muted); font-size: 1rem; }
+
+  /* TAB BAR */
+  .tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding: 0 1rem;
+  }
+  .tabs::-webkit-scrollbar { display:none; }
+
+  .tab {
+    padding: 1rem 1.5rem;
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--muted);
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    transition: color 0.2s, border-color 0.2s;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--text); border-bottom-color: var(--accent); }
+
+  .tab[data-lang="python"]  { --accent: var(--py); }
+  .tab[data-lang="c"]       { --accent: var(--c);  }
+  .tab[data-lang="csharp"]  { --accent: var(--cs); }
+  .tab[data-lang="java"]    { --accent: var(--java);}
+  .tab[data-lang="php"]     { --accent: var(--php); }
+
+  /* PANELS */
+  .panel { display: none; padding: 1.5rem; max-width: 1100px; margin: 0 auto; }
+  .panel.active { display: block; }
+
+  /* SECTION */
+  .section {
+    margin-bottom: 1.5rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.9rem 1.2rem;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    user-select: none;
+    background: var(--surface2);
+  }
+  .section-header:hover { background: rgba(255,255,255,0.04); }
+  .section-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    flex: 1;
+  }
+  .badge {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.07);
+    color: var(--muted);
+  }
+  .chevron { color: var(--muted); font-size: 0.75rem; transition: transform 0.2s; }
+  .section.open .chevron { transform: rotate(90deg); }
+  .section-body { display: none; padding: 1.2rem; }
+  .section.open .section-body { display: block; }
+
+  /* TABLE */
+  table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 0.8rem; }
+  th {
+    text-align: left;
+    padding: 0.5rem 0.75rem;
+    color: var(--muted);
+    font-weight: 700;
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 0.55rem 0.75rem;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    vertical-align: top;
+    line-height: 1.5;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.03); }
+
+  .kw  { color: var(--accent,#6366f1); font-weight: 700; }
+  .desc { color: var(--text); }
+  .ex  { color: var(--muted); font-style: italic; font-size: 0.75rem; }
+
+  code {
+    background: rgba(255,255,255,0.08);
+    padding: 0.1rem 0.4rem;
+    border-radius: 3px;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--accent, #a0a0ff);
+  }
+
+  /* color accents per lang */
+  .panel[data-lang="python"]  { --accent: var(--py); }
+  .panel[data-lang="c"]       { --accent: var(--c);  }
+  .panel[data-lang="csharp"]  { --accent: var(--cs); }
+  .panel[data-lang="java"]    { --accent: var(--java);}
+  .panel[data-lang="php"]     { --accent: var(--php); }
+
+  .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent, #6366f1);
+    flex-shrink: 0;
+  }
+
+  /* search */
+  .search-wrap {
+    padding: 1.2rem 1.5rem 0;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .search-input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    padding: 0.7rem 1rem;
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .search-input:focus { border-color: rgba(255,255,255,0.2); }
+  .search-input::placeholder { color: var(--muted); }
+
+  .hidden-row { display: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Guia de Linguagens</h1>
+  <p>Python · C · C# · Java · PHP — referência rápida</p>
+</header>
+
+<div class="tabs" id="tabs">
+  <button class="tab active" data-lang="python">🐍 Python</button>
+  <button class="tab" data-lang="c">⚙️ C</button>
+  <button class="tab" data-lang="csharp">💜 C#</button>
+  <button class="tab" data-lang="java">☕ Java</button>
+  <button class="tab" data-lang="php">🐘 PHP</button>
+</div>
+
+<div class="search-wrap">
+  <input class="search-input" id="search" placeholder="Buscar palavra-chave, comando ou tipo..." oninput="filterRows(this.value)">
+</div>
+
+<!-- ===================== PYTHON ===================== -->
+<div class="panel active" id="panel-python" data-lang="python">
+
+  <div class="section open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="dot"></div>
+      <span class="section-title">Tipos de Variáveis</span>
+      <span class="badge">8 tipos</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="section-body">
+      <table><thead><tr><th>Tipo</th><th>Declaração</th><th>Exemplo</th></tr></thead><tbody>
+        <tr><td class="kw">int</td><td class="desc">Número inteiro</td><td class="ex"><code>x = 10</code></td></tr>
+        <tr><td class="kw">float</td><td class="desc">Número decimal</td><td class="ex"><code>x = 3.14</code></td></tr>
+        <tr><td class="kw">str</td><td class="desc">Texto</td><td class="ex"><code>nome = "Ana"</code></td></tr>
+        <tr><td class="kw">bool</td><td class="desc">Verdadeiro/Falso</td><td class="ex"><code>ativo = True</code></td></tr>
+        <tr><td class="kw">list</td><td class="desc">Lista mutável</td><td class="ex"><code>nums = [1, 2, 3]</code></td></tr>
+        <tr><td class="kw">tuple</td><td class="desc">Lista imutável</td><td class="ex"><code>t = (1, 2)</code></td></tr>
+        <tr><td class="kw">dict</td><td class="desc">Chave-valor</td><td class="ex"><code>d = {"a": 1}</code></td></tr>
+        <tr><td class="kw">set</td><td class="desc">Conjunto único</td><td class="ex"><code>s = {1, 2, 3}</code></td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+  <div class="section open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="dot"></div>
+      <span class="section-title">Estruturas de Controle</span>
+      <span class="badge">6 estruturas</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="section-body">
+      <table><thead><tr><th>Comando</th><th>Descrição</th><th>Sintaxe</th></tr></thead><tbody>
+        <tr><td class="kw">if / elif / else</td><td class="desc">Condicional</td><td class="ex"><code>if x > 0: ... elif x == 0: ... else: ...</code></td></tr>
+        <tr><td class="kw">for</td><td class="desc">Loop iterável</td><td class="ex"><code>for i in range(10): ...</code></td></tr>
+        <tr><td class="kw">while</td><td class="desc">Loop condicional</td><td class="ex"><code>while x > 0: ...</code></td></tr>
+        <tr><td class="kw">break</td><td class="desc">Interrompe o loop</td><td class="ex"><code>break</code></td></tr>
+        <tr><td class="kw">continue</td><td class="desc">Pula iteração</td><td class="ex"><code>continue</code></td></tr>
+        <tr><td class="kw">pass</td><td class="desc">Bloco vazio</td><td class="ex"><code>if True: pass</code></td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+  <div class="section open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="dot"></div>
+      <span class="section-title">Funções</span>
+      <span class="badge">5 formas</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="section-body">
+      <table><thead><tr><th>Tipo</th><th>Descrição</th><th>Sintaxe</th></tr></thead><tbody>
+        <tr><td class="kw">def</td><td class="desc">Função normal</td><td class="ex"><code>def soma(a, b): return a + b</code></td></tr>
+        <tr><td class="kw">lambda</td><td class="desc">Função anônima</td><td class="ex"><code>f = lambda x: x * 2</code></td></tr>
+        <tr><td class="kw">*args</td><td class="desc">Parâmetros variáveis</td><td class="ex"><code>def f(*args): ...</code></td></tr>
+        <tr><td class="kw">**kwargs</td><td class="desc">Parâmetros nomeados</td><td class="ex"><code>def f(**kwargs): ...</code></td></tr>
+        <tr><td class="kw">return</td><td class="desc">Retorna valor</td><td class="ex"><code>return resultado</code></td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+  <div class="section open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="dot"></div>
+      <span class="section-title">Classes e OOP</span>
+      <span class="badge">7 conceitos</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="section-body">
+      <table><thead><tr><th>Conceito</th><th>Descrição</th><th>Sintaxe</th></tr></thead><tbody>
+        <tr><td class="kw">class</td><td class="desc">Define classe</td><td class="ex"><code>class Animal: ...</code></td></tr>
+        <tr><td class="kw">__init__</td><td class="desc">Construtor</td><td class="ex"><code>def __init__(self, nome): self.nome = nome</code></td></tr>
+        <tr><td class="kw">self</td><td class="desc">Referência ao objeto</td><td class="ex"><code>self.atributo</code></td></tr>
+        <tr><td class="kw">herança</td><td class="desc">Herdar classe pai</td><td class="ex"><code>class Cachorro(Animal): ...</code></td></tr>
+        <tr><td class="kw">super()</td><td class="desc">Chama método pai</td><td class="ex"><code>super().__init__(nome)</code></td></tr>
+        <tr><td class="kw">@property</td><td class="desc">Atributo como método</td><td class="ex"><code>@property def nome(self): ...</code></td></tr>
+        <tr><td class="kw">@staticmethod</td><td class="desc">Método sem self</td><td class="ex"><code>@staticmethod def util(): ...</code></td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+  <div class="section open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="dot"></div>
+      <span class="section-title">Tratamento de Erros</span>
+      <span class="badge">5 keywords</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="section-body">
+      <table><thead><tr><th>Keyword</th><th>Descrição</th><th>Sintaxe</th></tr></thead><tbody>
+        <tr><td class="kw">try</td><td class="desc">Bloco monitorado</td><td class="ex"><code>try: ...</code></td></tr>
+        <tr><td class="kw">except</td><td class="desc">Captura erro</td><td class="ex"><code>except ValueError as e: ...</code></td></tr>
+        <tr><td class="kw">else</td><td class="desc">Executa se sem erro</td><td class="ex"><code>else: ...</code></td></tr>
+        <tr><td class="kw">finally</td><td class="desc">Sempre executa</td><td class="ex"><code>finally: ...</code></td></tr>
+        <tr><td class="kw">raise</td><td class="desc">Lança exceção</td><td class="ex"><code>raise ValueError("msg")</code></td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+  <div class="section open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="dot"></div>
+      <span class="section-title">Funções Built-in Essenciais</span>
+      <span class="badge">16 funções</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="section-body">
+      <table><thead><tr><th>Função</th><th>Descrição</th><th>Exemplo</th></tr></thead><tbody>
+        <tr><td class="kw">print()</td><td class="desc">Imprime no console</td><td class="ex"><code>print("Olá")</code></td></tr>
+        <tr><td class="kw">input()</td><td class="desc">Lê entrada do usuário</td><td class="ex"><code>x = input("Digite: ")</code></td></tr>
+        <tr><td class="kw">len()</td><td class="desc">Tamanho de coleção</td><td class="ex"><code>len([1,2,3]) → 3</code></td></tr>
+        <tr><td class="kw">range()</td><td class="desc">Sequência numérica</td><td class="ex"><code>range(0, 10, 2)</code></td></tr>
+        <tr><td class="kw">type()</td><td class="desc">Tipo da variável</td><td class="ex"><code>type(x) → int</code></td></tr>
+        <tr><td class="kw">int() / float() / str()</td><td class="desc">Conversão de tipo</td><td class="ex"><code>int("5") → 5</code></td></tr>
+        <tr><td class="kw">list() / dict() / set()</td><td class="desc">Cria coleções</td><td class="ex"><code>list(range(3))</code></td></tr>
+        <tr><td class="kw">sorted()</td><td class="desc">Retorna ordenado</td><td class="ex"><code>sorted([3,1,2])</code></td></tr>
+        <tr><td class="kw">enumerate()</td><td class="desc">Índice + valor</td><td class="ex"><code>for i, v in enumerate(lista)</code></td></tr>
+        <tr><td class="kw">zip()</td><td class="desc">Une iteráveis</td><td class="ex"><code>zip([1,2], ['a','b'])</code></td></tr>
+        <tr><td class="kw">map()</td><td class="desc">Aplica função</td><td class="ex"><code>map(str, [1,2,3])</code></td></tr>
+        <tr><td class="kw">filter()</td><td class="desc">Filtra por condição</td><td class="ex"><code>filter(lambda x: x>0, nums)</code></td></tr>
+        <tr><td class="kw">open()</td><td class="desc">Abre arquivo</td><td class="ex"><code>open("arq.txt", "r")</code></td></tr>
+        <tr><td class="kw">abs()</td><td class="desc">Valor absoluto</td><td class="ex"><code>abs(-5) → 5</code></td></tr>
+        <tr><td class="kw">max() / min()</td><td class="desc">Máximo / mínimo</td><td class="ex"><code>max([1,2,3]) → 3</code></td></tr>
+        <tr><td class="kw">sum()</td><td class="desc">Soma de iterável</td><td class="ex"><code>sum([1,2,3]) → 6</code></td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+  <div class="section open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="dot"></div>
+      <span class="section-title">Operadores</span>
+      <span class="badge">4 categorias</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="section-body">
+      <table><thead><tr><th>Operador</th><th>Descrição</th><th>Exemplo</th></tr></thead><tbody>
+        <tr><td class="kw">+ - * / // % **</td><td class="desc">Aritméticos</td><td class="ex"><code>10 // 3 → 3 | 2**3 → 8</code></td></tr>
+        <tr><td class="kw">== != > < >= <=</td><td class="desc">Comparação</td><td class="ex"><code>x == 5</code></td></tr>
+        <tr><td class="kw">and or not</td><td class="desc">Lógicos</td><td class="ex"><code>x > 0 and x < 10</code></td></tr>
+        <tr><td class="kw">in / not in</td><td class="desc">Pertencimento</td><td class="ex"><code>3 in [1,2,3] → True</code></td></tr>
+        <tr><td class="kw">is / is not</td><td class="desc">Identidade</td><td class="ex"><code>x is None</code></td></tr>
+        <tr><td class="kw">& | ^ ~ << >></td><td class="desc">Bitwise</td><td class="ex"><code>5 & 3 → 1</code></td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+  <div class="section open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="dot"></div>
+      <span class="section-title">Módulos Essenciais (import)</span>
+      <span class="badge">10 módulos</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="section-body">
+      <table><thead><tr><th>Módulo</th><th>Para que serve</th><th>Exemplo</th></tr></thead><tbody>
+        <tr><td class="kw">math</td><td class="desc">Funções matemáticas</td><td class="ex"><code>math.sqrt(16) | math.pi</code></td></tr>
+        <tr><td class="kw">random</td><td class="desc">Números aleatórios</td><td class="ex"><code>random.randint(1,10)</code></td></tr>
+        <tr><td class="kw">os</td><td class="desc">Sistema operacional</td><td class="ex"><code>os.getcwd() | os.path.join()</code></td></tr>
+        <tr><td class="kw">sys</td><td class="desc">Parâmetros do sistema</td><td class="ex"><code>sys.argv | sys.exit()</code></td></tr>
+        <tr><td class="kw">json</td><td class="desc">Serializar/parse JSON</td><td class="ex"><code>json.loads() | json.dumps()</code></td></tr>
+        <tr><td class="kw">datetime</td><td class="desc">Datas e horas</td><td class="ex"><code>datetime.now()</code></td></tr>
+        <tr><td class="kw">re</td><td class="desc">Expressões regulares</td><td class="ex"><code>re.findall(r'\d+', texto)</code></td></tr>
+        <tr><td class="kw">numpy</td><td class="desc">Arrays e álgebra (ML)</td><td class="ex"><code>np.array([1,2,3])</code></td></tr>
+        <tr><td class="kw">requests</td><td class="desc">Requisições HTTP</td><td class="ex"><code>requests.get(url)</code></td></tr>
+        <tr><td class="kw">collections</td><td class="desc">Estruturas extras</td><td class="ex"><code>Counter, defaultdict, deque</code></td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===================== C ===================== -->
+<div class="panel" id="panel-c" data-lang="c">
+
+  <div class="section open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="dot"></div>
+      <span class="section-title">Tipos de Variáveis</span>
+      <span class="badge">9 tipos</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="section-body">
+      <table><thead><tr><th>Tipo</th><th>Descrição</th><th>Declaração</th></tr></thead><tbody>
+        <tr><td class="kw">int</td><td class="desc">Inteiro (4 bytes)</td><td class="ex"><code>int x = 10;</code></td></tr>
+        <tr><td class="kw">float</td><td class="desc">Decimal simples (4 bytes)</td><td class="ex"><code>float f = 3.14f;</code></td></tr>
+        <tr><td class="kw">double</td><td class="desc">Decimal dupla precisão</td><td class="ex"><code>double d = 3.14;</code></td></tr>
+        <tr><td class="kw">char</td><td class="desc">Caractere (1 byte)</td><td class="ex"><code>char c = 'A';</code></td></tr>
+        <tr><td class="kw">char[]</td><td class="desc">String (array de char)</td><td class="ex"><code>char nome[50] = "Ana";</code></td></tr>
+        <tr><td class="kw">long</td><td class="desc">Inteiro longo</td><td class="ex"><code>long l = 1000000L;</code></td></tr>
+        <tr><td class="kw">short</td><td class="desc">Inteiro curto (2 bytes)</td><td class="ex"><code>short s = 100;</code></td></tr>
+        <tr><td class="kw">unsigned int</td><td class="desc">Inteiro sem sinal</td><td class="ex"><code>unsigned int u = 300;</code></td></tr>
+        <tr><td class="kw">void</td><td class="desc">Sem tipo / sem retorno</td><td class="ex"><code>void funcao() {...}</code></td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+  <div class="section open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="dot"></div>
+      <span class="section-title">Ponteiros e Memória</span>
+      <span class="badge">6 operações</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="section-body">
+      <table><thead><tr><th>Operador/Função</th><th>Descrição</th><th>Exemplo</th></tr></thead><tbody>
+        <tr><td class="kw">*</td><td class="desc">Declara ponteiro / derreferencia</td><td class="ex"><code>int *p = &x; | *p = 5;</code></td></tr>
+        <tr><td class="kw">&</td><td class="desc">Endereço de memória</td><td class="ex"><code>&x → endereço de x</code></td></tr>
+        <tr><td class="kw">malloc()</td><td class="desc">Aloca memória dinâmica</td><td class="ex"><code>int *p = malloc(sizeof(int)*n);</code></td></tr>
+        <tr><td class="kw">calloc()</td><td class="desc">Aloca e zera memória</td><td class="ex"><code>calloc(n, sizeof(int))</code></td></tr>
+        <tr><td class="kw">realloc()</td><td class="desc">Redimensiona memória</td><td class="ex"><code>realloc(p, novo_tamanho)</code></td></tr>
+        <tr><td class="kw">free()</td><td class="desc">Libera memória alocada</td><td class="ex"><code>free(p);</code></td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+  <div class="section open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="dot"></div>
+      <span class="section-title">Bibliotecas Padrão (#include)</span>
+      <span class="badge">8 libs</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="section-body">
+      <table><thead><tr><th>Biblioteca</th><th>Para que serve</th><th>Funções principais</th></tr></thead><tbody>
+        <tr><td class="kw">&lt;stdio.h&gt;</td><td class="desc">Entrada/saída</td><td class="ex"><code>printf() scanf() fopen() fclose()</code></td></tr>
+        <tr><td class="kw">&lt;stdlib.h&gt;</td><td class="desc">Utilitários e memória</td><td class="ex"><code>malloc() free() exit() atoi()</code></td></tr>
+        <tr><td class="kw">&lt;string.h&gt;</td><td class="desc">Manipulação de strings</td><td class="ex"><code>strlen() strcpy() strcmp() strcat()</code></td></tr>
+        <tr><td class="kw">&lt;math.h&gt;</td><td class="desc">Funções matemáticas</td><td class="ex"><code>sqrt() pow() floor() ceil()</code></td></tr>
+        <tr><td class="kw">&lt;ctype.h&gt;</td><td class="desc">Classifica caracteres</td><td class="ex"><code>isalpha() isdigit() toupper()</code></td></tr>
+        <tr><td class="kw">&lt;time.h&gt;</td><td class="desc">Data e tempo</td><td class="ex"><code>time() clock() difftime()</code></td></tr>
+        <tr><td class="kw">&lt;stdbool.h&gt;</td><td class="desc">Tipo booleano</td><td class="ex"><code>bool ativo = true;</code></td></tr>
+        <tr><td class="kw">&lt;limits.h&gt;</td><td class="desc">Limites dos tipos</td><td class="ex"><code>INT_MAX  INT_MIN</code></td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+  <div class="section open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="dot"></div>
+      <span class="section-title">Estruturas de Controle</span>
+      <span class="badge">7 estruturas</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="section-body">
+      <table><thead><tr><th>Comando</th><th>Descrição</th><th>Sintaxe</th></tr></thead><tbody>
+        <tr><td class="kw">if / else if / else</td><td class="desc">Condicional</td><td class="ex"><code>if (x > 0) { } else { }</code></td></tr>
+        <tr><td class="kw">switch / case</td><td class="desc">Múltiplos casos</td><td class="ex"><code>switch(x) { case 1: ... break; default: ... }</code></td></tr>
+        <tr><td class="kw">for</td><td class="desc">Loop com contador</td><td class="ex"><code>for (int i=0; i&lt;10; i++) { }</code></td></tr>
+        <tr><td class="kw">while</td><td class="desc">Loop condicional</td><td class="ex"><code>while (x > 0) { }</code></td></tr>
+        <tr><td class="kw">do...while</td><td class="desc">Executa ao menos 1x</td><td class="ex"><code>do { } while (cond);</code></td></tr>
+        <tr><td class="kw">break</td><td class="desc">Sai do loop/switch</td><td class="ex"><code>break;</code></td></tr>
+        <tr><td class="kw">continue</td><td class="desc">Pula iteração</td><td class="ex"><code>continue;</code></td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+  <div class="section open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="dot"></div>
+      <span class="section-title">Structs e Typedef</span>
+      <span class="badge">3 conceitos</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="section-body">
+      <table><thead><tr><th>Conceito</th><th>Descrição</th><th>Sintaxe</th></tr></thead><tbody>
+        <tr><td class="kw">struct</td><td class="desc">Agrupa variáveis</td><td class="ex"><code>struct Pessoa { char nome[50]; int idade; };</code></td></tr>
+        <tr><td class="kw">typedef</td><td class="desc">Apelido de tipo</td><td class="ex"><code>typedef struct Pessoa Pessoa;</code></td></tr>
+        <tr><td class="kw">enum</td><td class="desc">Constantes nomeadas</td><td class="ex"><code>enum Cor { VERMELHO, VERDE, AZUL };</code></td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+  <div class="section open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="dot"></div>
+      <span class="section-title">Entrada / Saída (printf / scanf)</span>
+      <span class="badge">formatadores</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="section-body">
+      <table><thead><tr><th>Format</th><th>Tipo</th><th>Exemplo</th></tr></thead><tbody>
+        <tr><td class="kw">%d</td><td class="desc">int</td><td class="ex"><code>printf("%d", x);</code></td></tr>
+        <tr><td class="kw">%f</td><td class="desc">float/double</td><td class="ex"><code>printf("%.2f", pi);</code></td></tr>
+        <tr><td class="kw">%c</td><td class="desc">char</td><td class="ex"><code>printf("%c", 'A');</code></td></tr>
+        <tr><td class="kw">%s</td><td class="desc">string (char*)</td><td class="ex"><code>printf("%s", nome);</code></td></tr>
+        <tr><td class="kw">%p</td><td class="desc">ponteiro (endereço)</td><td class="ex"><code>printf("%p", ptr);</code></td></tr>
+        <tr><td class="kw">\n \t</td><td class="desc">newline / tab</td><td class="ex"><code>printf("linha\n");</code></td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===================== C# ===================== -->
+<div class="panel" id="panel-csharp" data-lang="csharp">
+
+  <div class="section open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="dot"></div>
+      <span class="section-title">Tipos de Variáveis</span>
+      <span class="badge">10 tipos</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="section-body">
+      <table><thead><tr><th>Tipo</th><th>Descrição</th><th>Declaração</th></tr></thead><tbody>
+        <tr><td class="kw">int</td><td class="desc">Inteiro 32-bit</td><td class="ex"><code>int x = 10;</code></td></tr>
+        <tr><td class="kw">long</td><td class="desc">Inteiro 64-bit</td><td class="ex"><code>long l = 100000L;</code></td></tr>
+        <tr><td class="kw">float</td><td class="desc">Decimal 32-bit</td><td class="ex"><code>float f = 3.14f;</code></td></tr>
+        <tr><td class="kw">double</td><td class="desc">Decimal 64-bit</td><td class="ex"><code>double d = 3.14;</code></td></tr>
+        <tr><td class="kw">decimal</td><td class="desc">Alta precisão (financeiro)</td><td class="ex"><code>decimal m = 9.99m;</code></td></tr>
+        <tr><td class="kw">bool</td><td class="desc">Verdadeiro/Falso</td><td class="ex"><code>bool ativo = true;</code></td></tr>
+        <tr><td class="kw">char</td><td class="desc">Caractere Unicode</td><td class="ex"><code>char c = 'A';</code></td></tr>
+        <tr><td class="kw">string</td><td class="desc">Texto imutável</td><td class="ex"><code>string nome = "Ana";</code></td></tr>
+        <tr><td class="kw">var</td><td class="desc">Inferência de tipo</td><td class="ex"><code>var x = 42;</code></td></tr>
+        <tr><td class="kw">object</td><td class="desc">Tipo base universal</td><td class="ex"><code>object obj = "qualquer";</code></td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+  <div class="section open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="dot"></div>
+      <span class="section-title">Classes e OOP</span>
+      <span class="badge">10 conceitos</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="section-body">
+      <table><thead><tr><th>Conceito</th><th>Descrição</th><th>Sintaxe</th></tr></thead><tbody>
+        <tr><td class="kw">class</td><td class="desc">Define classe</td><td class="ex"><code>class Animal { }</code></td></tr>
+        <tr><td class="kw">new</td><td class="desc">Instancia objeto</td><td class="ex"><code>Animal a = new Animal();</code></td></tr>
+        <tr><td class="kw">public/private/protected</td><td class="desc">Modificadores de acesso</td><td class="ex"><code>public string Nome { get; set; }</code></td></tr>
+        <tr><td class="kw">interface</td><td class="desc">Contrato de métodos</td><td class="ex"><code>interface IAnimal { void Falar(); }</code></td></tr>
+        <tr><td class="kw">abstract</td><td class="desc">Classe/método abstrato</td><td class="ex"><code>abstract class Base { }</code></td></tr>
+        <tr><td class="kw">override</td><td class="desc">Sobrescreve método</td><td class="ex"><code>override void Falar() { }</code></td></tr>
+        <tr><td class="kw">virtual</td><td class="desc">Método sobrescritível</td><td class="ex"><code>virtual void Falar() { }</code></td></tr>
+        <tr><td class="kw">static</td><td class="desc">Pertence à classe</td><td class="ex"><code>static int Contador = 0;</code></td></tr>
+        <tr><td class="kw">readonly</td><td class="desc">Valor somente leitura</td><td class="ex"><code>readonly int MAX = 100;</code></td></tr>
+        <tr><td class="kw">: (herança)</td><td class="desc">Herdar classe/interface</td><td class="ex"><code>class Cachorro : Animal { }</code></td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+  <div class="section open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="dot"></div>
+      <span class="section-title">Coleções</span>
+      <span class="badge">6 tipos</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="section-body">
+      <table><thead><tr><th>Tipo</th><th>Descrição</th><th>Exemplo</th></tr></thead><tbody>
+        <tr><td class="kw">int[]</td><td class="desc">Array fixo</td><td class="ex"><code>int[] nums = new int[5];</code></td></tr>
+        <tr><td class="kw">List&lt;T&gt;</td><td class="desc">Lista dinâmica</td><td class="ex"><code>List&lt;string&gt; lista = new();</code></td></tr>
+        <tr><td class="kw">Dictionary&lt;K,V&gt;</td><td class="desc">Chave-valor</td><td class="ex"><code>Dictionary&lt;string,int&gt; d = new();</code></td></tr>
+        <tr><td class="kw">HashSet&lt;T&gt;</td><td class="desc">Conjunto único</td><td class="ex"><code>HashSet&lt;int&gt; set = new();</code></td></tr>
+        <tr><td class="kw">Queue&lt;T&gt;</td><td class="desc">Fila (FIFO)</td><td class="ex"><code>Queue&lt;int&gt; q = new();</code></td></tr>
+        <tr><td class="kw">Stack&lt;T&gt;</td><td class="desc">Pilha (LIFO)</td><td class="ex"><code>Stack&lt;int&gt; s = new();</code></td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+  <div class="section open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="dot"></div>
+      <span class="section-title">LINQ (consultas em coleções)</span>
+      <span class="badge">8 métodos</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="section-body">
+      <table><thead><tr><th>Método</th><th>Descrição</th><th>Exemplo</th></tr></thead><tbody>
+        <tr><td class="kw">Where()</td><td class="desc">Filtra elementos</td><td class="ex"><code>lista.Where(x => x > 0)</code></td></tr>
+        <tr><td class="kw">Select()</td><td class="desc">Projeta/transforma</td><td class="ex"><code>lista.Select(x => x * 2)</code></td></tr>
+        <tr><td class="kw">FirstOrDefault()</td><td class="desc">Primeiro ou null</td><td class="ex"><code>lista.FirstOrDefault(x => x > 5)</code></td></tr>
+        <tr><td class="kw">OrderBy()</td><td class="desc">Ordena crescente</td><td class="ex"><code>lista.OrderBy(x => x.Nome)</code></td></tr>
+        <tr><td class="kw">GroupBy()</td><td class="desc">Agrupa por chave</td><td class="ex"><code>lista.GroupBy(x => x.Tipo)</code></td></tr>
+        <tr><td class="kw">Count()</td><td class="desc">Conta elementos</td><td class="ex"><code>lista.Count(x => x > 0)</code></td></tr>
+        <tr><td class="kw">Any() / All()</td><td class="desc">Verifica condição</td><td class="ex"><code>lista.Any(x => x == null)</code></td></tr>
+        <tr><td class="kw">ToList() / ToArray()</td><td class="desc">Materializa query</td><td class="ex"><code>query.ToList()</code></td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+  <div class="section open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="dot"></div>
+      <span class="section-title">Async / Await</span>
+      <span class="badge">5 keywords</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="section-body">
+      <table><thead><tr><th>Keyword</th><th>Descrição</th><th>Sintaxe</th></tr></thead><tbody>
+        <tr><td class="kw">async</td><td class="desc">Declara método assíncrono</td><td class="ex"><code>async Task&lt;int&gt; BuscarAsync() { }</code></td></tr>
+        <tr><td class="kw">await</td><td class="desc">Aguarda Task</td><td class="ex"><code>var r = await BuscarAsync();</code></td></tr>
+        <tr><td class="kw">Task</td><td class="desc">Representa operação async</td><td class="ex"><code>Task.Run(() => ...)</code></td></tr>
+        <tr><td class="kw">Task&lt;T&gt;</td><td class="desc">Task com retorno</td><td class="ex"><code>Task&lt;string&gt; t = ...</code></td></tr>
+        <tr><td class="kw">CancellationToken</td><td class="desc">Cancela operação</td><td class="ex"><code>token.ThrowIfCancellationRequested()</code></td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+  <div class="section open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="dot"></div>
+      <span class="section-title">Exceções</span>
+      <span class="badge">5 keywords</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="section-body">
+      <table><thead><tr><th>Keyword</th><th>Descrição</th><th>Sintaxe</th></tr></thead><tbody>
+        <tr><td class="kw">try / catch / finally</td><td class="desc">Tratamento de erro</td><td class="ex"><code>try { } catch (Exception e) { } finally { }</code></td></tr>
+        <tr><td class="kw">throw</td><td class="desc">Lança exceção</td><td class="ex"><code>throw new ArgumentException("msg");</code></td></tr>
+        <tr><td class="kw">when</td><td class="desc">Filtro no catch</td><td class="ex"><code>catch (Ex e) when (e.Code == 404) { }</code></td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===================== JAVA ===================== -->
+<div class="panel" id="panel-java" data-lang="java">
+
+  <div class="section open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="dot"></div>
+      <span class="section-title">Tipos Primitivos e Wrappers</span>
+      <span class="badge">8 tipos</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="section-body">
+      <table><thead><tr><th>Primitivo</th><th>Wrapper</th><th>Exemplo</th></tr></thead><tbody>
+        <tr><td class="kw">int</td><td class="desc">Integer</td><td class="ex"><code>int x = 10; | Integer.parseInt("5")</code></td></tr>
+        <tr><td class="kw">long</td><td class="desc">Long</td><td class="ex"><code>long l = 100L;</code></td></tr>
+        <tr><td class="kw">double</td><td class="desc">Double</td><td class="ex"><code>double d = 3.14;</code></td></tr>
+        <tr><td class="kw">float</td><td class="desc">Float</td><td class="ex"><code>float f = 3.14f;</code></td></tr>
+        <tr><td class="kw">boolean</td><td class="desc">Boolean</td><td class="ex"><code>boolean b = true;</code></td></tr>
+        <tr><td class="kw">char</td><td class="desc">Character</td><td class="ex"><code>char c = 'A';</code></td></tr>
+        <tr><td class="kw">byte</td><td class="desc">Byte</td><td class="ex"><code>byte b = 127;</code></td></tr>
+        <tr><td class="kw">String</td><td class="desc">Texto (objeto)</td><td class="ex"><code>String s = "Ana";</code></td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+  <div class="section open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="dot"></div>
+      <span class="section-title">Classes e OOP</span>
+      <span class="badge">10 conceitos</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="section-body">
+      <table><thead><tr><th>Conceito</th><th>Descrição</th><th>Sintaxe</th></tr></thead><tbody>
+        <tr><td class="kw">class</td><td class="desc">Define classe</td><td class="ex"><code>public class Animal { }</code></td></tr>
+        <tr><td class="kw">new</td><td class="desc">Instancia objeto</td><td class="ex"><code>Animal a = new Animal();</code></td></tr>
+        <tr><td class="kw">extends</td><td class="desc">Herança</td><td class="ex"><code>class Cachorro extends Animal { }</code></td></tr>
+        <tr><td class="kw">implements</td><td class="desc">Implementa interface</td><td class="ex"><code>class X implements IAnimal { }</code></td></tr>
+        <tr><td class="kw">interface</td><td class="desc">Contrato</td><td class="ex"><code>interface IAnimal { void falar(); }</code></td></tr>
+        <tr><td class="kw">abstract</td><td class="desc">Classe/método abstrato</td><td class="ex"><code>abstract class Base { }</code></td></tr>
+        <tr><td class="kw">@Override</td><td class="desc">Sobrescreve método</td><td class="ex"><code>@Override public void falar() { }</code></td></tr>
+        <tr><td class="kw">super</td><td class="desc">Referência à classe pai</td><td class="ex"><code>super.falar();</code></td></tr>
+        <tr><td class="kw">this</td><td class="desc">Referência ao objeto atual</td><td class="ex"><code>this.nome = nome;</code></td></tr>
+        <tr><td class="kw">final</td><td class="desc">Imutável / não herdável</td><td class="ex"><code>final int MAX = 100;</code></td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+  <div class="section open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="dot"></div>
+      <span class="section-title">Collections Framework</span>
+      <span class="badge">6 estruturas</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="section-body">
+      <table><thead><tr><th>Tipo</th><th>Descrição</th><th>Exemplo</th></tr></thead><tbody>
+        <tr><td class="kw">ArrayList&lt;T&gt;</td><td class="desc">Lista dinâmica</td><td class="ex"><code>ArrayList&lt;String&gt; l = new ArrayList&lt;&gt;();</code></td></tr>
+        <tr><td class="kw">LinkedList&lt;T&gt;</td><td class="desc">Lista encadeada</td><td class="ex"><code>LinkedList&lt;Integer&gt; ll = new LinkedList&lt;&gt;();</code></td></tr>
+        <tr><td class="kw">HashMap&lt;K,V&gt;</td><td class="desc">Chave-valor (hash)</td><td class="ex"><code>HashMap&lt;String,Integer&gt; m = new HashMap&lt;&gt;();</code></td></tr>
+        <tr><td class="kw">HashSet&lt;T&gt;</td><td class="desc">Conjunto único</td><td class="ex"><code>HashSet&lt;String&gt; s = new HashSet&lt;&gt;();</code></td></tr>
+        <tr><td class="kw">Stack&lt;T&gt;</td><td class="desc">Pilha LIFO</td><td class="ex"><code>Stack&lt;Integer&gt; st = new Stack&lt;&gt;();</code></td></tr>
+        <tr><td class="kw">Queue (LinkedList)</td><td class="desc">Fila FIFO</td><td class="ex"><code>Queue&lt;String&gt; q = new LinkedList&lt;&gt;();</code></td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+  <div class="section open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="dot"></div>
+      <span class="section-title">Lambdas e Streams (Java 8+)</span>
+      <span class="badge">8 operações</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="section-body">
+      <table><thead><tr><th>Operação</th><th>Descrição</th><th>Exemplo</th></tr></thead><tbody>
+        <tr><td class="kw">lambda</td><td class="desc">Função anônima</td><td class="ex"><code>(x) -> x * 2</code></td></tr>
+        <tr><td class="kw">stream()</td><td class="desc">Cria pipeline</td><td class="ex"><code>lista.stream()</code></td></tr>
+        <tr><td class="kw">filter()</td><td class="desc">Filtra elementos</td><td class="ex"><code>.filter(x -> x > 0)</code></td></tr>
+        <tr><td class="kw">map()</td><td class="desc">Transforma elementos</td><td class="ex"><code>.map(String::toUpperCase)</code></td></tr>
+        <tr><td class="kw">collect()</td><td class="desc">Materializa stream</td><td class="ex"><code>.collect(Collectors.toList())</code></td></tr>
+        <tr><td class="kw">forEach()</td><td class="desc">Itera com ação</td><td class="ex"><code>.forEach(System.out::println)</code></td></tr>
+        <tr><td class="kw">reduce()</td><td class="desc">Reduz a um valor</td><td class="ex"><code>.reduce(0, Integer::sum)</code></td></tr>
+        <tr><td class="kw">Optional&lt;T&gt;</td><td class="desc">Evita NullPointer</td><td class="ex"><code>Optional.ofNullable(x).orElse(0)</code></td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+  <div class="section open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="dot"></div>
+      <span class="section-title">I/O e Impressão</span>
+      <span class="badge">5 métodos</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="section-body">
+      <table><thead><tr><th>Método</th><th>Descrição</th><th>Exemplo</th></tr></thead><tbody>
+        <tr><td class="kw">System.out.println()</td><td class="desc">Imprime com newline</td><td class="ex"><code>System.out.println("Olá");</code></td></tr>
+        <tr><td class="kw">System.out.print()</td><td class="desc">Imprime sem newline</td><td class="ex"><code>System.out.print("x = ");</code></td></tr>
+        <tr><td class="kw">System.out.printf()</td><td class="desc">Formatado</td><td class="ex"><code>System.out.printf("%.2f%n", pi);</code></td></tr>
+        <tr><td class="kw">Scanner</td><td class="desc">Lê entrada do usuário</td><td class="ex"><code>Scanner sc = new Scanner(System.in); sc.nextInt();</code></td></tr>
+        <tr><td class="kw">BufferedReader</td><td class="desc">Lê arquivos/stdin</td><td class="ex"><code>new BufferedReader(new FileReader("f.txt"))</code></td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===================== PHP ===================== -->
+<div class="panel" id="panel-php" data-lang="php">
+
+  <div class="section open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="dot"></div>
+      <span class="section-title">Sintaxe Base e Variáveis</span>
+      <span class="badge">8 tipos</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="section-body">
+      <table><thead><tr><th>Tipo</th><th>Descrição</th><th>Exemplo</th></tr></thead><tbody>
+        <tr><td class="kw">$var</td><td class="desc">Toda variável começa com $</td><td class="ex"><code>$nome = "Ana";</code></td></tr>
+        <tr><td class="kw">int</td><td class="desc">Inteiro</td><td class="ex"><code>$x = 42;</code></td></tr>
+        <tr><td class="kw">float</td><td class="desc">Decimal</td><td class="ex"><code>$pi = 3.14;</code></td></tr>
+        <tr><td class="kw">string</td><td class="desc">Texto</td><td class="ex"><code>$s = "Olá";</code></td></tr>
+        <tr><td class="kw">bool</td><td class="desc">Verdadeiro/Falso</td><td class="ex"><code>$ativo = true;</code></td></tr>
+        <tr><td class="kw">array</td><td class="desc">Array associativo ou indexado</td><td class="ex"><code>$a = [1, 2, 3]; | ["nome" => "Ana"]</code></td></tr>
+        <tr><td class="kw">null</td><td class="desc">Valor nulo</td><td class="ex"><code>$x = null;</code></td></tr>
+        <tr><td class="kw">const</td><td class="desc">Constante</td><td class="ex"><code>const MAX = 100; | define('PI', 3.14);</code></td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+  <div class="section open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="dot"></div>
+      <span class="section-title">Strings — Funções Essenciais</span>
+      <span class="badge">12 funções</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="section-body">
+      <table><thead><tr><th>Função</th><th>Descrição</th><th>Exemplo</th></tr></thead><tbody>
+        <tr><td class="kw">strlen()</td><td class="desc">Tamanho da string</td><td class="ex"><code>strlen("Ana") → 3</code></td></tr>
+        <tr><td class="kw">strtolower() / strtoupper()</td><td class="desc">Caixa alta/baixa</td><td class="ex"><code>strtoupper("ana") → "ANA"</code></td></tr>
+        <tr><td class="kw">trim()</td><td class="desc">Remove espaços</td><td class="ex"><code>trim(" ana ") → "ana"</code></td></tr>
+        <tr><td class="kw">str_replace()</td><td class="desc">Substitui texto</td><td class="ex"><code>str_replace("a","o","ana")</code></td></tr>
+        <tr><td class="kw">explode()</td><td class="desc">Divide em array</td><td class="ex"><code>explode(",", "a,b,c")</code></td></tr>
+        <tr><td class="kw">implode()</td><td class="desc">Une array em string</td><td class="ex"><code>implode(",", ["a","b"])</code></td></tr>
+        <tr><td class="kw">substr()</td><td class="desc">Trecho da string</td><td class="ex"><code>substr("Olá", 0, 2) → "Ol"</code></td></tr>
+        <tr><td class="kw">strpos()</td><td class="desc">Posição de substring</td><td class="ex"><code>strpos("hello","ll") → 2</code></td></tr>
+        <tr><td class="kw">sprintf()</td><td class="desc">Formata string</td><td class="ex"><code>sprintf("%.2f", 3.14159)</code></td></tr>
+        <tr><td class="kw">number_format()</td><td class="desc">Formata número</td><td class="ex"><code>number_format(1234.5, 2)</code></td></tr>
+        <tr><td class="kw">preg_match()</td><td class="desc">Regex</td><td class="ex"><code>preg_match('/\d+/', $s, $m)</code></td></tr>
+        <tr><td class="kw">htmlspecialchars()</td><td class="desc">Escapa HTML</td><td class="ex"><code>htmlspecialchars($input)</code></td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+  <div class="section open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="dot"></div>
+      <span class="section-title">Arrays — Funções Essenciais</span>
+      <span class="badge">10 funções</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="section-body">
+      <table><thead><tr><th>Função</th><th>Descrição</th><th>Exemplo</th></tr></thead><tbody>
+        <tr><td class="kw">count()</td><td class="desc">Tamanho do array</td><td class="ex"><code>count([1,2,3]) → 3</code></td></tr>
+        <tr><td class="kw">array_push()</td><td class="desc">Adiciona ao final</td><td class="ex"><code>array_push($a, 4);</code></td></tr>
+        <tr><td class="kw">array_pop()</td><td class="desc">Remove do final</td><td class="ex"><code>array_pop($a)</code></td></tr>
+        <tr><td class="kw">array_merge()</td><td class="desc">Une arrays</td><td class="ex"><code>array_merge($a, $b)</code></td></tr>
+        <tr><td class="kw">array_map()</td><td class="desc">Aplica função</td><td class="ex"><code>array_map(fn($x) => $x*2, $a)</code></td></tr>
+        <tr><td class="kw">array_filter()</td><td class="desc">Filtra elementos</td><td class="ex"><code>array_filter($a, fn($x) => $x > 0)</code></td></tr>
+        <tr><td class="kw">array_keys() / array_values()</td><td class="desc">Chaves / valores</td><td class="ex"><code>array_keys(["a"=>1,"b"=>2])</code></td></tr>
+        <tr><td class="kw">in_array()</td><td class="desc">Verifica existência</td><td class="ex"><code>in_array(3, [1,2,3]) → true</code></td></tr>
+        <tr><td class="kw">sort() / rsort()</td><td class="desc">Ordena array</td><td class="ex"><code>sort($arr)</code></td></tr>
+        <tr><td class="kw">array_slice()</td><td class="desc">Trecho do array</td><td class="ex"><code>array_slice($a, 1, 3)</code></td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+  <div class="section open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="dot"></div>
+      <span class="section-title">Superglobals e Web</span>
+      <span class="badge">7 variáveis</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="section-body">
+      <table><thead><tr><th>Variável</th><th>Descrição</th><th>Exemplo</th></tr></thead><tbody>
+        <tr><td class="kw">$_GET</td><td class="desc">Parâmetros da URL</td><td class="ex"><code>$_GET['id']</code></td></tr>
+        <tr><td class="kw">$_POST</td><td class="desc">Dados de formulário POST</td><td class="ex"><code>$_POST['email']</code></td></tr>
+        <tr><td class="kw">$_REQUEST</td><td class="desc">GET + POST + COOKIE</td><td class="ex"><code>$_REQUEST['campo']</code></td></tr>
+        <tr><td class="kw">$_SESSION</td><td class="desc">Dados da sessão</td><td class="ex"><code>$_SESSION['user'] = $id;</code></td></tr>
+        <tr><td class="kw">$_COOKIE</td><td class="desc">Cookies</td><td class="ex"><code>$_COOKIE['token']</code></td></tr>
+        <tr><td class="kw">$_FILES</td><td class="desc">Upload de arquivos</td><td class="ex"><code>$_FILES['foto']['tmp_name']</code></td></tr>
+        <tr><td class="kw">$_SERVER</td><td class="desc">Info do servidor/request</td><td class="ex"><code>$_SERVER['REQUEST_METHOD']</code></td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+  <div class="section open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="dot"></div>
+      <span class="section-title">Classes e OOP (PHP 8)</span>
+      <span class="badge">9 conceitos</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="section-body">
+      <table><thead><tr><th>Conceito</th><th>Descrição</th><th>Sintaxe</th></tr></thead><tbody>
+        <tr><td class="kw">class</td><td class="desc">Define classe</td><td class="ex"><code>class Animal { }</code></td></tr>
+        <tr><td class="kw">__construct()</td><td class="desc">Construtor</td><td class="ex"><code>public function __construct($nome) { }</code></td></tr>
+        <tr><td class="kw">extends</td><td class="desc">Herança</td><td class="ex"><code>class Cachorro extends Animal { }</code></td></tr>
+        <tr><td class="kw">interface</td><td class="desc">Contrato</td><td class="ex"><code>interface IAnimal { public function falar(); }</code></td></tr>
+        <tr><td class="kw">implements</td><td class="desc">Implementa interface</td><td class="ex"><code>class X implements IAnimal { }</code></td></tr>
+        <tr><td class="kw">$this-></td><td class="desc">Acessa atributo/método</td><td class="ex"><code>$this->nome</code></td></tr>
+        <tr><td class="kw">self::</td><td class="desc">Acessa membro estático</td><td class="ex"><code>self::$contador</code></td></tr>
+        <tr><td class="kw">static</td><td class="desc">Membro estático</td><td class="ex"><code>public static $total = 0;</code></td></tr>
+        <tr><td class="kw">readonly</td><td class="desc">Propriedade imutável (PHP 8.1)</td><td class="ex"><code>public readonly string $nome;</code></td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+  <div class="section open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="dot"></div>
+      <span class="section-title">Banco de Dados (PDO)</span>
+      <span class="badge">6 operações</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="section-body">
+      <table><thead><tr><th>Operação</th><th>Descrição</th><th>Sintaxe</th></tr></thead><tbody>
+        <tr><td class="kw">new PDO()</td><td class="desc">Conecta ao banco</td><td class="ex"><code>$pdo = new PDO("mysql:host=localhost;dbname=db", $u, $p);</code></td></tr>
+        <tr><td class="kw">prepare()</td><td class="desc">Prepara query</td><td class="ex"><code>$stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");</code></td></tr>
+        <tr><td class="kw">execute()</td><td class="desc">Executa query</td><td class="ex"><code>$stmt->execute([$id]);</code></td></tr>
+        <tr><td class="kw">fetch()</td><td class="desc">Uma linha</td><td class="ex"><code>$stmt->fetch(PDO::FETCH_ASSOC)</code></td></tr>
+        <tr><td class="kw">fetchAll()</td><td class="desc">Todas as linhas</td><td class="ex"><code>$stmt->fetchAll(PDO::FETCH_ASSOC)</code></td></tr>
+        <tr><td class="kw">rowCount()</td><td class="desc">Linhas afetadas</td><td class="ex"><code>$stmt->rowCount()</code></td></tr>
+      </tbody></table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Tabs
+  document.getElementById('tabs').addEventListener('click', e => {
+    const tab = e.target.closest('.tab');
+    if (!tab) return;
+    const lang = tab.dataset.lang;
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('panel-' + lang).classList.add('active');
+    document.getElementById('search').value = '';
+    document.querySelectorAll('tr').forEach(r => r.classList.remove('hidden-row'));
+  });
+
+  // Toggle sections
+  function toggleSection(header) {
+    header.parentElement.classList.toggle('open');
+  }
+
+  // Search
+  function filterRows(query) {
+    const q = query.toLowerCase().trim();
+    const activePanel = document.querySelector('.panel.active');
+    activePanel.querySelectorAll('tbody tr').forEach(row => {
+      const text = row.textContent.toLowerCase();
+      row.classList.toggle('hidden-row', q.length > 0 && !text.includes(q));
+    });
+    // Open all sections when searching
+    if (q.length > 0) {
+      activePanel.querySelectorAll('.section').forEach(s => s.classList.add('open'));
+    }
+  }
+</script>
+</body>
+</html>
